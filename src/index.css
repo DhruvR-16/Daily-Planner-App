@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+:root {
+    --color-star-dust-50: #f6f6f5;
+    --color-star-dust-100: #e7e7e6;
+    --color-star-dust-200: #d1d1d0;
+    --color-star-dust-300: #b1b1af;
+    --color-star-dust-400: #9a9a98;
+    --color-star-dust-500: #6e6e6c;
+    --color-star-dust-600: #5e5e5c;
+    --color-star-dust-700: #4f504e;
+    --color-star-dust-800: #454644;
+    --color-star-dust-900: #3d3d3c;
+    --color-star-dust-950: #262626;
+  }
