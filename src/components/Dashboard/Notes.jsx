@@ -8,7 +8,7 @@ function Notes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
 
-  // Load notes from localStorage - ensure it loads properly on navigation
+
   useEffect(() => {
     try {
       const storedNotes = localStorage.getItem("notes");
@@ -21,14 +21,14 @@ function Notes() {
     }
   }, []);
 
-  // Save notes to localStorage whenever they change
+
   useEffect(() => {
     if (notes.length > 0) {
       localStorage.setItem("notes", JSON.stringify(notes));
     }
   }, [notes]);
 
-  // Add new note
+
   const addNote = () => {
     if (!currentNote.trim()) return;
     
@@ -39,17 +39,17 @@ function Notes() {
       color: getRandomColor()
     };
     
-    // Update the local state first
+
     const updatedNotes = [newNote, ...notes];
     setNotes(updatedNotes);
     
-    // Also immediately save to localStorage
+
     localStorage.setItem("notes", JSON.stringify(updatedNotes));
     
     setCurrentNote("");
   };
 
-  // Update existing note
+
   const updateNote = () => {
     if (!currentNote.trim() || !editingNote) return;
     
@@ -63,24 +63,24 @@ function Notes() {
         : note
     );
     
-    // Update the local state first
+
     setNotes(updatedNotes);
     
-    // Also immediately save to localStorage
+
     localStorage.setItem("notes", JSON.stringify(updatedNotes));
     
     setCurrentNote("");
     setEditingNote(null);
   };
 
-  // Delete note
+
   const deleteNote = (id) => {
     const updatedNotes = notes.filter(note => note.id !== id);
     
-    // Update the local state first
+
     setNotes(updatedNotes);
     
-    // Also immediately save to localStorage
+
     localStorage.setItem("notes", JSON.stringify(updatedNotes));
     
     if (editingNote && editingNote.id === id) {
@@ -89,24 +89,24 @@ function Notes() {
     }
   };
 
-  // Set up editing
+
   const startEditing = (note) => {
     setEditingNote(note);
     setCurrentNote(note.content);
   };
 
-  // Cancel editing
+
   const cancelEditing = () => {
     setEditingNote(null);
     setCurrentNote("");
   };
 
-  // Filter notes based on search term
+
   const filteredNotes = notes.filter(note =>
     note.content.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort notes based on sort order
+
   const sortedNotes = [...filteredNotes].sort((a, b) => {
     const dateA = new Date(a.updatedAt || a.timestamp);
     const dateB = new Date(b.updatedAt || b.timestamp);
@@ -118,12 +118,12 @@ function Notes() {
     }
   });
 
-  // Format timestamp
+
   const formatTimestamp = (timestamp) => {
     return format(new Date(timestamp), "MMM d, yyyy 'at' h:mm a");
   };
 
-  // Generate random pastel color for note
+
   const getRandomColor = () => {
     const colors = [
       "bg-yellow-50 border-yellow-200",
@@ -159,13 +159,13 @@ function Notes() {
           value={currentNote}
           onChange={(e) => setCurrentNote(e.target.value)}
           placeholder="Type your note here..."
-          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[120px]"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0fbcf9] min-h-[120px]"
         ></textarea>
         <div className="flex justify-end mt-3">
           <button
             onClick={editingNote ? updateNote : addNote}
             disabled={!currentNote.trim()}
-            className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center ${!currentNote.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`px-4 py-2 bg-[#0fbcf9] text-white rounded-md hover:bg-[#3dbfee] transition-colors flex items-center ${!currentNote.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
               {editingNote ? (
@@ -179,7 +179,7 @@ function Notes() {
         </div>
       </div>
 
-      {/* Search and filter */}
+
       <div className="mb-6 bg-white rounded-lg shadow-sm p-4">
         <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
           <div className="flex-1">
@@ -194,7 +194,7 @@ function Notes() {
                 placeholder="Search notes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="pl-10 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0fbcf9]"
               />
             </div>
           </div>
@@ -203,7 +203,7 @@ function Notes() {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="w-full sm:w-auto border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full sm:w-auto border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0fbcf9]"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -212,11 +212,11 @@ function Notes() {
         </div>
       </div>
 
-      {/* Notes grid */}
+
       {sortedNotes.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-10 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#0fbcf9]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </div>
@@ -252,7 +252,7 @@ function Notes() {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => startEditing(note)}
-                      className="p-1 hover:text-indigo-700 transition-colors"
+                      className="p-1 hover:text-[#0fbcf9] transition-colors"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

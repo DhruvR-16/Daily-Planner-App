@@ -6,7 +6,7 @@ import Tasks from "./components/Dashboard/Tasks.jsx";
 import Notes from "./components/Dashboard/Notes.jsx";
 import "./index.css";
 
-// Replace Goals component with an Analytics component
+
 const Analytics = () => (
   <div className="container mx-auto">
     <h1 className="text-2xl font-bold text-gray-800 mb-6">Analytics</h1>
@@ -72,7 +72,7 @@ function App() {
             </h1>
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-300 flex items-center"
+              className="bg-[#1B9CFC] hover:bg-[#1b9afcdf] text-white px-4 py-2 rounded-md transition duration-300 flex items-center"
             >
               Logout
             </button>
@@ -82,7 +82,7 @@ function App() {
               <Route path="/" element={<Tasks />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/analytics" element={<Analytics />} />
-              <Route path="/summary" element={<Summary />} />
+
               <Route path="/notes" element={<Notes />} />
               <Route path="*" element={<Tasks />} />
             </Routes>
