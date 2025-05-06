@@ -1,12 +1,16 @@
-# React + Vite
+# PlanX — The Daily Planner App
+## PlanX helps you efficiently organize your day by letting you schedule tasks, set reminders, and sync events with your calendars — all within a personalized and easy-to-use interface.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# ✨ Features
+📄 Daily Task Scheduler — Easily add, edit, and organize your daily to-do list.
 
-Currently, two official plugins are available:
+📊 Progress Tracking — Monitor task completion and track productivity over time.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+📈 Analytics — View total tasks completed and your completion rate, with visual charts to track your progress.
 
-## Expanding the ESLint configuration
+📝 Notes — Take quick notes throughout the day to keep track of ideas and important information.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# 🛠️ Technologies Used
+React.js
+
+Tailwind
