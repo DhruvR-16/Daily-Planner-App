@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // Add this import for authentication
-import { getAnalytics } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: import.meta.env.API_KEY,
@@ -12,10 +12,21 @@ const firebaseConfig = {
   measurementId: import.meta.env.MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
-// Initialize Firebase Authentication
+const app = initializeApp(firebaseConfig);
+
+
 const auth = getAuth(app);
 
-export { auth };
+
+let analytics = null;
+
+isSupported().then(supported => {
+  if (supported) {
+    analytics = getAnalytics(app);
+  }
+}).catch(error => {
+  console.warn("Analytics not supported:", error);
+});
+
+export { auth, analytics, app };
