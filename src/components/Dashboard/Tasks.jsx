@@ -384,7 +384,7 @@ function Tasks() {
                   : "border-indigo-500"
               }`}
             >
-              <div className="p-4 flex flex-col sm:flex-row sm:items-center">
+              <div className="p-4 flex sm:items-center">
                 <div className="flex-1">
                   <div className="flex items-start">
                     <div className="flex-shrink-0 mt-1">
@@ -419,7 +419,7 @@ function Tasks() {
                   </div>
                 </div>
                 
-                <div className="sm:ml-4 flex items-center justify-end mt-3 sm:mt-0">
+                <div className="sm:ml-4 flex  sm:mt-0">
                   <button
                     onClick={() => handleDelete(task.id)}
                     className="ml-2 text-red-600 hover:text-red-800 transition-colors"

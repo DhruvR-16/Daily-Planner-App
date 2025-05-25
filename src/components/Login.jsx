@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { auth } from "../firebase-config";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
 
 function Login({ onLogin }) {
   const [activeTab, setActiveTab] = useState("login");
-  
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  
 
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,39 +27,39 @@ function Login({ onLogin }) {
 
     try {
       const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        loginEmail, 
+        auth,
+        loginEmail,
         loginPassword
       );
-      
 
       const user = userCredential.user;
 
-      const displayName = user.displayName || user.email.split('@')[0];
+      const displayName = user.displayName || user.email.split("@")[0];
       onLogin({ username: displayName });
     } catch (error) {
       let errorMessage = "Login failed";
-      
+
       switch (error.code) {
-        case 'auth/invalid-email':
+        case "auth/invalid-email":
           errorMessage = "Invalid email address";
           break;
-        case 'auth/user-disabled':
+        case "auth/user-disabled":
           errorMessage = "This account has been disabled";
           break;
-        case 'auth/user-not-found':
+        case "auth/user-not-found":
           errorMessage = "User not found";
           break;
-        case 'auth/wrong-password':
+        case "auth/wrong-password":
           errorMessage = "Incorrect password";
           break;
-        case 'auth/operation-not-allowed':
-          errorMessage = "Email/password sign-in is not enabled. Please contact administrator.";
+        case "auth/operation-not-allowed":
+          errorMessage =
+            "Email/password sign-in is not enabled. Please contact administrator.";
           break;
         default:
           errorMessage = error.message;
       }
-      
+
       setError(errorMessage);
       setIsLoading(false);
     }
@@ -68,13 +70,11 @@ function Login({ onLogin }) {
     setIsLoading(true);
     setError("");
 
-
     if (!username.trim()) {
       setError("Username is required");
       setIsLoading(false);
       return;
     }
-
 
     if (signupPassword !== confirmPassword) {
       setError("Passwords don't match");
@@ -89,49 +89,47 @@ function Login({ onLogin }) {
     }
 
     try {
-
       const userCredential = await createUserWithEmailAndPassword(
-        auth, 
-        signupEmail, 
+        auth,
+        signupEmail,
         signupPassword
       );
-      
+
       const user = userCredential.user;
-      
 
       await updateProfile(user, {
-        displayName: username
+        displayName: username,
       });
-      
 
       onLogin({ username: username });
     } catch (error) {
       let errorMessage = "Signup failed";
-      
+
       switch (error.code) {
-        case 'auth/email-already-in-use':
+        case "auth/email-already-in-use":
           errorMessage = "Email is already in use";
           break;
-        case 'auth/invalid-email':
+        case "auth/invalid-email":
           errorMessage = "Invalid email address";
           break;
-        case 'auth/weak-password':
+        case "auth/weak-password":
           errorMessage = "Password is too weak";
           break;
-        case 'auth/operation-not-allowed':
-          errorMessage = "Email/password sign-up is not enabled. Please contact administrator.";
+        case "auth/operation-not-allowed":
+          errorMessage =
+            "Email/password sign-up is not enabled. Please contact administrator.";
           break;
         default:
           errorMessage = error.message;
       }
-      
+
       setError(errorMessage);
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#2d3436] to-[#636e72] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex  from-[#2d3436] to-[#636e72] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-[#b1bec4] rounded-xl shadow-xl overflow-hidden">
         <div className="px-6 py-8 sm:px-10">
           <div className="text-center mb-8">
@@ -141,14 +139,12 @@ function Login({ onLogin }) {
             </p>
           </div>
 
-
           <div className="flex border-b border-gray-300 mb-6">
             <button
-              className={`flex-1 py-2 text-center font-medium ${
-                activeTab === "login"
+              className={`flex-1 py-2 text-center font-medium ${activeTab === "login"
                   ? "text-[#2d3436] border-b-2 border-[#2d3436]"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
               onClick={() => {
                 setActiveTab("login");
                 setError("");
@@ -157,11 +153,10 @@ function Login({ onLogin }) {
               Login
             </button>
             <button
-              className={`flex-1 py-2 text-center font-medium ${
-                activeTab === "signup"
+              className={`flex-1 py-2 text-center font-medium ${activeTab === "signup"
                   ? "text-[#2d3436] border-b-2 border-[#2d3436]"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
               onClick={() => {
                 setActiveTab("signup");
                 setError("");
@@ -176,7 +171,6 @@ function Login({ onLogin }) {
               {error}
             </div>
           )}
-
 
           {activeTab === "login" && (
             <form onSubmit={handleLogin} className="space-y-6">
@@ -222,9 +216,8 @@ function Login({ onLogin }) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2d3436] hover:bg-[#3a4245] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2d3436] ${
-                    isLoading ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
+                  className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2d3436] hover:bg-[#3a4245] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2d3436] ${isLoading ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                 >
                   {isLoading ? (
                     <svg
@@ -254,7 +247,6 @@ function Login({ onLogin }) {
             </form>
           )}
 
-
           {activeTab === "signup" && (
             <form onSubmit={handleSignup} className="space-y-6">
               <div>
@@ -275,11 +267,9 @@ function Login({ onLogin }) {
                   placeholder="Choose a username"
                 />
               </div>
-              
+
               <div>
-                <label
-                  htmlFor="signup-email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Email
                 </label>
@@ -296,9 +286,7 @@ function Login({ onLogin }) {
               </div>
 
               <div>
-                <label
-                  htmlFor="signup-password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Password
                 </label>
@@ -334,12 +322,8 @@ function Login({ onLogin }) {
               </div>
 
               <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2d3436] hover:bg-[#3a4245] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2d3436] ${
-                    isLoading ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
+                <button type="submit" disabled={isLoading} className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2d3436] hover:bg-[#3a4245] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2d3436] ${isLoading ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                 >
                   {isLoading ? (
                     <svg
