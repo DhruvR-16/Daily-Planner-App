@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config";
 import Login from "./components/Login.jsx";
+import Sidebar from "./components/Dashboard/Sidebar.jsx";
 import Tasks from "./components/Dashboard/Tasks.jsx";
 import Notes from "./components/Dashboard/Notes.jsx";
 import Analytics from "./components/Dashboard/Analytics.jsx"; 
