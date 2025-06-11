@@ -8,7 +8,29 @@ function Notes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
 
+  const getRandomColor = () => {
+    const colors = [
+      "bg-yellow-50 border-yellow-200",
+      "bg-blue-50 border-blue-200",
+      "bg-green-50 border-green-200",
+      "bg-pink-50 border-pink-200",
+      "bg-purple-50 border-purple-200",
+      "bg-indigo-50 border-indigo-200",
+      "bg-orange-50 border-orange-200",
+      "bg-red-50 border-red-200",
+      "bg-teal-50 border-teal-200",
+      "bg-lime-50 border-lime-200",
+      "bg-fuchsia-50 border-fuchsia-200",
+      "bg-gray-50 border-gray-200",
+      "bg-cyan-50 border-cyan-200",
+      "bg-amber-50 border-amber-200",
+      "bg-emerald-50 border-emerald-200",
+      "bg-rose-50 border-rose-200"
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
+  
   useEffect(() => {
     try {
       const storedNotes = localStorage.getItem("notes");
@@ -124,23 +146,13 @@ function Notes() {
   };
 
 
-  const getRandomColor = () => {
-    const colors = [
-      "bg-yellow-50 border-yellow-200",
-      "bg-blue-50 border-blue-200",
-      "bg-green-50 border-green-200",
-      "bg-pink-50 border-pink-200",
-      "bg-purple-50 border-purple-200",
-      "bg-indigo-50 border-indigo-200"
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
+
 
   return (
     <div className="container mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Notes</h1>
 
-      {/* Note input area */}
+
       <div className="mb-8 bg-white rounded-lg shadow-sm p-4">
         <div className="mb-2 flex justify-between items-center">
           <h2 className="font-medium text-gray-800">

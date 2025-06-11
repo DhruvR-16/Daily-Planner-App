@@ -49,9 +49,9 @@ function App() {
     setSelectedDate(date);
   };
 
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
-  }
+  // if (!isLoggedIn) {
+  //   return <Login onLogin={handleLogin} />;
+  // }
   
   return (
     <BrowserRouter>
@@ -82,7 +82,7 @@ function App() {
           <div className="p-6">
             <Routes>
               <Route path="/" element={<Navigate to="/tasks" />} /> {/* Default to tasks */}
-              <Route path="/tasks" element={<Tasks selectedDate={selectedDate} />} />
+              <Route path="/tasks" element={<Tasks selectedDate={selectedDate} onDateChange={handleDateChange} />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/summary" element={<Summary selectedDate={selectedDate} />} />
               <Route path="/notes" element={<Notes />} />
