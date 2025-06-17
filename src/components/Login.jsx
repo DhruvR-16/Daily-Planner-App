@@ -1,361 +1,186 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { auth } from "../firebase-config";
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  updateProfile,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  updateProfile
 } from "firebase/auth";
 
-function Login({ onLogin }) {
-  const [activeTab, setActiveTab] = useState("login");
-
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [username, setUsername] = useState("");
-
+const Login = ({ onLogin }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        loginEmail,
-        loginPassword
-      );
-
-      const user = userCredential.user;
-
-      const displayName = user.displayName || user.email.split("@")[0];
-      onLogin({ username: displayName });
-    } catch (error) {
-      let errorMessage = "Login failed";
-
-      switch (error.code) {
-        case "auth/invalid-email":
-          errorMessage = "Invalid email address";
-          break;
-        case "auth/user-disabled":
-          errorMessage = "This account has been disabled";
-          break;
-        case "auth/user-not-found":
-          errorMessage = "User not found";
-          break;
-        case "auth/wrong-password":
-          errorMessage = "Incorrect password";
-          break;
-        case "auth/operation-not-allowed":
-          errorMessage =
-            "Email/password sign-in is not enabled. Please contact administrator.";
-          break;
-        default:
-          errorMessage = error.message;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const displayName = user.displayName || user.email.split("@")[0];
+        onLogin({ username: displayName });
       }
+    });
+    return () => unsubscribe();
+  }, [onLogin]);
 
-      setError(errorMessage);
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignup = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    if (!username.trim()) {
-      setError("Username is required");
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password");
       setIsLoading(false);
       return;
     }
 
-    if (signupPassword !== confirmPassword) {
-      setError("Passwords don't match");
-      setIsLoading(false);
-      return;
-    }
-
-    if (signupPassword.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (isSignUp && !name.trim()) {
+      setError("Please enter your name");
       setIsLoading(false);
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        signupEmail,
-        signupPassword
-      );
+      if (isSignUp) {
 
-      const user = userCredential.user;
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
 
-      await updateProfile(user, {
-        displayName: username,
-      });
+        await updateProfile(userCredential.user, {
+          displayName: name.trim()
+        });
+        
 
-      onLogin({ username: username });
-    } catch (error) {
-      let errorMessage = "Signup failed";
-
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          errorMessage = "Email is already in use";
-          break;
-        case "auth/invalid-email":
-          errorMessage = "Invalid email address";
-          break;
-        case "auth/weak-password":
-          errorMessage = "Password is too weak";
-          break;
-        case "auth/operation-not-allowed":
-          errorMessage =
-            "Email/password sign-up is not enabled. Please contact administrator.";
-          break;
-        default:
-          errorMessage = error.message;
+        await userCredential.user.reload();
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
       }
+    } catch (error) {
+      console.error("Authentication error:", error.code);
+      
 
-      setError(errorMessage);
+      if (error.code.includes("auth/")) {
+        switch (error.code) {
+          case "auth/invalid-email":
+            setError("Invalid email address");
+            break;
+          case "auth/user-not-found":
+          case "auth/wrong-password":
+            setError("Invalid email or password");
+            break;
+          case "auth/email-already-in-use":
+            setError("Email is already in use");
+            break;
+          case "auth/weak-password":
+            setError("Password should be at least 6 characters");
+            break;
+          default:
+            setError("Authentication failed. Please try again.");
+        }
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex  from-[#2d3436] to-[#636e72] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full bg-[#b1bec4] rounded-xl shadow-xl overflow-hidden">
-        <div className="px-6 py-8 sm:px-10">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-[#2d3436]">PlanX</h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Your daily planning assistant
-            </p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md">
+        <div className="mb-6 text-center">
+          <h1 className="text-3xl font-bold text-gray-900">
+            <span className="text-blue-600">PlanX</span>
+          </h1>
+          <p className="mt-2 text-gray-600">Your daily planning assistant</p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="mb-4 text-center">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              {isSignUp ? "Create Account" : "Login"}
+            </h2>
           </div>
-
-          <div className="flex border-b border-gray-300 mb-6">
-            <button
-              className={`flex-1 py-2 text-center font-medium ${activeTab === "login"
-                  ? "text-[#2d3436] border-b-2 border-[#2d3436]"
-                  : "text-gray-500 hover:text-gray-700"
-                }`}
-              onClick={() => {
-                setActiveTab("login");
-                setError("");
-              }}
-            >
-              Login
-            </button>
-            <button
-              className={`flex-1 py-2 text-center font-medium ${activeTab === "signup"
-                  ? "text-[#2d3436] border-b-2 border-[#2d3436]"
-                  : "text-gray-500 hover:text-gray-700"
-                }`}
-              onClick={() => {
-                setActiveTab("signup");
-                setError("");
-              }}
-            >
-              Sign Up
-            </button>
-          </div>
-
+          
           {error && (
-            <div className="p-3 mb-4 bg-red-100 border border-red-200 text-red-600 rounded-md text-sm">
+            <div className="mb-4 bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-md">
               {error}
             </div>
           )}
-
-          {activeTab === "login" && (
-            <form onSubmit={handleLogin} className="space-y-6">
+          
+          <form onSubmit={handleAuth} className="space-y-4">
+            {isSignUp && (
               <div>
-                <label
-                  htmlFor="login-email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Email
+                <label htmlFor="name" className="block mb-1 text-sm font-medium text-gray-700">
+                  Your Name
                 </label>
                 <input
-                  id="login-email"
-                  name="login-email"
-                  type="email"
-                  required
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2d3436] focus:border-[#2d3436]"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="login-password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Password
-                </label>
-                <input
-                  id="login-password"
-                  name="login-password"
-                  type="password"
-                  required
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2d3436] focus:border-[#2d3436]"
-                  placeholder="Enter your password"
-                />
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2d3436] hover:bg-[#3a4245] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2d3436] ${isLoading ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
-                >
-                  {isLoading ? (
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : null}
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {activeTab === "signup" && (
-            <form onSubmit={handleSignup} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="username"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Username
-                </label>
-                <input
-                  id="username"
-                  name="username"
+                  id="name"
                   type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2d3436] focus:border-[#2d3436]"
-                  placeholder="Choose a username"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required={isSignUp}
                 />
               </div>
-
-              <div>
-                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Email
-                </label>
-                <input
-                  id="signup-email"
-                  name="signup-email"
-                  type="email"
-                  required
-                  value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2d3436] focus:border-[#2d3436]"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Password
-                </label>
-                <input
-                  id="signup-password"
-                  name="signup-password"
-                  type="password"
-                  required
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2d3436] focus:border-[#2d3436]"
-                  placeholder="Create a password"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="confirm-password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Confirm Password
-                </label>
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2d3436] focus:border-[#2d3436]"
-                  placeholder="Confirm your password"
-                />
-              </div>
-
-              <div>
-                <button type="submit" disabled={isLoading} className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2d3436] hover:bg-[#3a4245] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2d3436] ${isLoading ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
-                >
-                  {isLoading ? (
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : null}
-                  {isLoading ? "Creating account..." : "Sign Up"}
-                </button>
-              </div>
-            </form>
-          )}
+            )}
+            
+            <div>
+              <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                required
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block mb-1 text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                required
+              />
+            </div>
+            
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-medium disabled:opacity-70"
+            >
+              {isLoading ? "Processing..." : (isSignUp ? "Sign Up" : "Sign In")}
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              {isSignUp
+                ? "Already have an account? Sign in"
+                : "Don't have an account? Sign up"}
+            </button>
+          </div>
         </div>
+        
+       
       </div>
     </div>
   );
-}
+};
 
 export default Login;
