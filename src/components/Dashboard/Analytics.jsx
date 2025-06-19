@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { format, subDays } from 'date-fns';
-import { TrendingUp, CheckSquare, Activity, Target, BarChart2, Clock, Calendar, PieChart } from "lucide-react";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
-import { Pie, Bar, Line } from 'react-chartjs-2';
-
+import { CheckSquare, Clock, PieChart } from "lucide-react";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
 
 ChartJS.register(
   ArcElement, 
   CategoryScale, 
   LinearScale, 
   BarElement, 
-  PointElement,
-  LineElement,
-  Title, 
   Tooltip, 
   Legend
 );
@@ -23,13 +18,11 @@ const Analytics = () => {
     totalTasks: 0,
     completedTasks: 0,
     byPriority: { High: 0, Medium: 0, Low: 0 },
-    byType: { Work: 0, Personal: 0, Study: 0, Other: 0 },
-    byDate: {} 
+    byType: { Work: 0, Personal: 0, Other: 0 }
   });
   const [focusData, setFocusData] = useState({
     totalFocusTime: 0, 
-    sessionsCount: 0,
-    byDate: {} 
+    sessionsCount: 0
   });
 
   useEffect(() => {
@@ -46,24 +39,14 @@ const Analytics = () => {
       let total = 0;
       let completed = 0;
       const byPriority = { High: 0, Medium: 0, Low: 0 };
-      const byType = { Work: 0, Personal: 0, Study: 0, Other: 0 };
-      const byDate = {};
-      
+      const byType = { Work: 0, Personal: 0, Other: 0 };
 
       Object.entries(tasksByDate).forEach(([date, tasks]) => {
         const tasksForDay = tasks || [];
         const completedForDay = tasksForDay.filter(task => task.completed).length;
-        
-
-        byDate[date] = {
-          total: tasksForDay.length,
-          completed: completedForDay
-        };
-        
 
         total += tasksForDay.length;
         completed += completedForDay;
-        
 
         tasksForDay.forEach(task => {
           if (byPriority.hasOwnProperty(task.priority)) {
@@ -82,8 +65,7 @@ const Analytics = () => {
         totalTasks: total,
         completedTasks: completed,
         byPriority,
-        byType,
-        byDate
+        byType
       });
       
     } catch (error) {
@@ -98,20 +80,10 @@ const Analytics = () => {
       
       const focusHistory = JSON.parse(stored);
       const totalFocusTime = focusHistory.reduce((sum, session) => sum + session.duration, 0);
-      const byDate = {};
-      
-
-      focusHistory.forEach(session => {
-        if (!byDate[session.date]) {
-          byDate[session.date] = 0;
-        }
-        byDate[session.date] += session.duration;
-      });
       
       setFocusData({
         totalFocusTime,
-        sessionsCount: focusHistory.length,
-        byDate
+        sessionsCount: focusHistory.length
       });
       
     } catch (error) {
@@ -132,43 +104,6 @@ const Analytics = () => {
     return `${hours}h ${remainingMinutes}m`;
   };
 
-
-  const getLast7DaysData = () => {
-    const dates = Array.from({ length: 7 }, (_, i) => {
-      const date = subDays(new Date(), i);
-      return format(date, 'yyyy-MM-dd');
-    }).reverse();
-    
-
-    const taskCompletionData = dates.map(date => {
-      const dayData = taskData.byDate[date] || { total: 0, completed: 0 };
-      return {
-        date: format(new Date(date), 'MMM d'),
-        completionRate: getCompletionRate(dayData.completed, dayData.total),
-        total: dayData.total,
-        completed: dayData.completed
-      };
-    });
-    
-
-    const focusTimeData = dates.map(date => {
-      const secondsFocused = focusData.byDate[date] || 0;
-      return {
-        date: format(new Date(date), 'MMM d'),
-        minutes: Math.floor(secondsFocused / 60)
-      };
-    });
-    
-    return {
-      dates: dates.map(date => format(new Date(date), 'MMM d')),
-      taskCompletionData,
-      focusTimeData
-    };
-  };
-
-  const trendData = getLast7DaysData();
-
-
   const priorityChartData = {
     labels: Object.keys(taskData.byPriority),
     datasets: [{
@@ -176,8 +111,8 @@ const Analytics = () => {
       data: Object.values(taskData.byPriority),
       backgroundColor: [
         'rgba(239, 68, 68, 0.7)',  
-        'rgba(59, 130, 246, 0.7)', 
-        'rgba(16, 185, 129, 0.7)'  
+        'rgba(59, 130, 246, 0.7)',  
+        'rgba(16, 185, 129, 0.7)'   
       ],
       borderColor: [
         'rgb(239, 68, 68)',
@@ -197,31 +132,8 @@ const Analytics = () => {
         'rgba(99, 102, 241, 0.7)',   
         'rgba(245, 158, 11, 0.7)',   
         'rgba(139, 92, 246, 0.7)',   
-        'rgba(107, 114, 128, 0.7)'  
+        'rgba(107, 114, 128, 0.7)'   
       ],
-      borderWidth: 1
-    }]
-  };
-  
-  const completionTrendData = {
-    labels: trendData.dates,
-    datasets: [{
-      label: 'Completion Rate (%)',
-      data: trendData.taskCompletionData.map(d => d.completionRate),
-      fill: false,
-      borderColor: 'rgb(59, 130, 246)',
-      tension: 0.3,
-      pointBackgroundColor: 'rgb(59, 130, 246)'
-    }]
-  };
-  
-  const focusTrendData = {
-    labels: trendData.dates,
-    datasets: [{
-      label: 'Focus Time (minutes)',
-      data: trendData.focusTimeData.map(d => d.minutes),
-      backgroundColor: 'rgba(139, 92, 246, 0.7)',
-      borderColor: 'rgb(139, 92, 246)',
       borderWidth: 1
     }]
   };
@@ -242,12 +154,6 @@ const Analytics = () => {
             onClick={() => setActiveTab('focus')}
           >
             Focus Stats
-          </button>
-          <button 
-            className={`px-4 py-1.5 text-sm rounded-md transition-all ${activeTab === 'trends' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('trends')}
-          >
-            Trends
           </button>
         </div>
       </div>
@@ -340,17 +246,13 @@ const Analytics = () => {
                       <span className="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
                       Personal: {taskData.byType.Personal}
                     </li>
-                    <li className="flex items-center">
-                      <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
-                      Study: {taskData.byType.Study}
-                    </li>
+                    
                   </ul>
                 </div>
               </div>
             </div>
           </div>
           
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white rounded-lg shadow-md p-5 border border-gray-200">
               <h3 className="text-lg font-medium text-gray-800 mb-4">Tasks by Priority</h3>
@@ -382,6 +284,32 @@ const Analytics = () => {
         </div>
       )}
 
+      {activeTab === 'focus' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Focus Session Stats</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+                <p className="text-sm text-purple-600 mb-1">Total Focus Time</p>
+                <p className="text-2xl font-bold text-gray-800">{formatMinutes(focusData.totalFocusTime)}</p>
+              </div>
+              
+              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                <p className="text-sm text-blue-600 mb-1">Average Per Session</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {focusData.sessionsCount ? formatMinutes(focusData.totalFocusTime / focusData.sessionsCount) : "0 min"}
+                </p>
+              </div>
+              
+              <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+                <p className="text-sm text-green-600 mb-1">Total Sessions</p>
+                <p className="text-2xl font-bold text-gray-800">{focusData.sessionsCount}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
