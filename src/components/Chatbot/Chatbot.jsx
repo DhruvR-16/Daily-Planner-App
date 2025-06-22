@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, X, Loader2, Bot, User, ExternalLink } from 'lucide-react';
+import { MessageSquare, Send, X, Loader2, Bot, User, ExternalLink, Minimize2, Maximize2 } from 'lucide-react';
 import './ChatbotStyles.css';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -7,6 +7,7 @@ const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
     { 
       id: 1, 
@@ -28,13 +29,18 @@ const Chatbot = () => {
   useEffect(scrollToBottom, [messages]);
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if (isOpen && !isMinimized && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isOpen]);
+  }, [isOpen, isMinimized]);
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
+    setIsMinimized(false);
+  };
+
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
   };
 
   const formatMessage = (text) => {
@@ -187,6 +193,7 @@ const Chatbot = () => {
       >
         <MessageSquare size={24} />
         <div className="chatbot-fab-pulse"></div>
+        <div className="chatbot-fab-glow"></div>
       </button>
     );
   }
@@ -194,103 +201,116 @@ const Chatbot = () => {
   const messageGroups = groupMessagesByTime(messages);
 
   return (
-    <div className="chatbot-container">
+    <div className={`chatbot-container ${isMinimized ? 'chatbot-minimized' : ''}`}>
       <header className="chatbot-header">
         <div className="chatbot-header-content">
           <div className="chatbot-avatar">
             <Bot size={20} />
+            <div className="chatbot-status-indicator"></div>
           </div>
           <div className="chatbot-header-text">
             <h3 className="chatbot-title">PlanX Assistant</h3>
-            <p className="chatbot-status">Online</p>
+            <p className="chatbot-status">
+              <span className="status-dot"></span>
+              Online
+            </p>
           </div>
         </div>
-        <button onClick={toggleChatbot} className="chatbot-close-btn">
-          <X size={20} />
-        </button>
+        <div className="chatbot-controls">
+          <button onClick={toggleMinimize} className="chatbot-control-btn">
+            {isMinimized ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
+          </button>
+          <button onClick={toggleChatbot} className="chatbot-close-btn">
+            <X size={16} />
+          </button>
+        </div>
       </header>
 
-      <div className="chatbot-messages">
-        {messageGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="message-group">
-            <div className={`message-group-container ${group[0].sender === 'user' ? 'user-group' : 'bot-group'}`}>
-              <div className="message-avatar">
-                {group[0].sender === 'user' ? (
-                  <User size={16} />
-                ) : (
-                  <Bot size={16} />
-                )}
-              </div>
-              <div className="message-group-content">
-                {group.map((msg, msgIndex) => (
-                  <div
-                    key={msg.id}
-                    className={`message ${msg.sender === 'user' ? 'user-message' : 'bot-message'} ${
-                      msg.isError ? 'error-message' : ''
-                    }`}
-                  >
-                    <div 
-                      className="message-content"
-                      dangerouslySetInnerHTML={{ __html: formatMessage(msg.text) }}
-                    />
-                    {msgIndex === group.length - 1 && (
-                      <div className="message-timestamp">
-                        {formatTime(msg.timestamp)}
-                      </div>
+      {!isMinimized && (
+        <>
+          <div className="chatbot-messages">
+            {messageGroups.map((group, groupIndex) => (
+              <div key={groupIndex} className="message-group">
+                <div className={`message-group-container ${group[0].sender === 'user' ? 'user-group' : 'bot-group'}`}>
+                  <div className="message-avatar">
+                    {group[0].sender === 'user' ? (
+                      <User size={16} />
+                    ) : (
+                      <Bot size={16} />
                     )}
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-        
-        {(isLoading || isTyping) && (
-          <div className="message-group">
-            <div className="message-group-container bot-group">
-              <div className="message-avatar">
-                <Bot size={16} />
-              </div>
-              <div className="message-group-content">
-                <div className="message bot-message typing-indicator">
-                  <div className="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                  <div className="message-group-content">
+                    {group.map((msg, msgIndex) => (
+                      <div
+                        key={msg.id}
+                        className={`message ${msg.sender === 'user' ? 'user-message' : 'bot-message'} ${
+                          msg.isError ? 'error-message' : ''
+                        }`}
+                      >
+                        <div 
+                          className="message-content"
+                          dangerouslySetInnerHTML={{ __html: formatMessage(msg.text) }}
+                        />
+                        {msgIndex === group.length - 1 && (
+                          <div className="message-timestamp">
+                            {formatTime(msg.timestamp)}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <form onSubmit={handleSendMessage} className="chatbot-input-form">
-        <div className="chatbot-input-container">
-          <textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            className="chatbot-input"
-            disabled={isLoading}
-            rows="1"
-          />
-          <button
-            type="submit"
-            className="chatbot-send-btn"
-            disabled={isLoading || !inputValue.trim()}
-          >
-            {isLoading ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Send size={18} />
+            ))}
+            
+            {(isLoading || isTyping) && (
+              <div className="message-group">
+                <div className="message-group-container bot-group">
+                  <div className="message-avatar">
+                    <Bot size={16} />
+                  </div>
+                  <div className="message-group-content">
+                    <div className="message bot-message typing-indicator">
+                      <div className="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
-          </button>
-        </div>
-      </form>
+            <div ref={messagesEndRef} />
+          </div>
+
+          <form onSubmit={handleSendMessage} className="chatbot-input-form">
+            <div className="chatbot-input-container">
+              <textarea
+                ref={inputRef}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                className="chatbot-input"
+                disabled={isLoading}
+                rows="1"
+              />
+              <button
+                type="submit"
+                className="chatbot-send-btn"
+                disabled={isLoading || !inputValue.trim()}
+              >
+                {isLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Send size={18} />
+                )}
+              </button>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   );
 };
