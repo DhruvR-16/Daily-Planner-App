@@ -6,7 +6,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { Eye, EyeOff, Mail, Lock, User, CheckCircle, XCircle, AlertCircle } from "lucide-react";
-import './LoginStyles.css';
+import '../components/LoginStyles.css';
 
 function Login({ onLogin }) {
   const [activeTab, setActiveTab] = useState("login");
