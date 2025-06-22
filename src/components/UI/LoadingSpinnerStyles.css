@@ -1,0 +1,253 @@
+/* Loading Spinner Styles */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.spinner-circle {
+  position: relative;
+  display: inline-block;
+}
+
+.spinner-inner {
+  border-radius: var(--radius-full);
+  border-style: solid;
+  animation: spin 1s linear infinite;
+}
+
+/* Spinner Sizes */
+.spinner-small .spinner-inner {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
+}
+
+.spinner-medium .spinner-inner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-width: 2px;
+}
+
+.spinner-large .spinner-inner {
+  width: 2rem;
+  height: 2rem;
+  border-width: 3px;
+}
+
+.spinner-extra-large .spinner-inner {
+  width: 3rem;
+  height: 3rem;
+  border-width: 4px;
+}
+
+/* Spinner Colors */
+.spinner-primary .spinner-inner {
+  border-color: var(--primary-200);
+  border-top-color: var(--primary-600);
+}
+
+.spinner-secondary .spinner-inner {
+  border-color: var(--secondary-200);
+  border-top-color: var(--secondary-600);
+}
+
+.spinner-success .spinner-inner {
+  border-color: var(--success-200);
+  border-top-color: var(--success-600);
+}
+
+.spinner-warning .spinner-inner {
+  border-color: var(--warning-200);
+  border-top-color: var(--warning-600);
+}
+
+.spinner-error .spinner-inner {
+  border-color: var(--error-200);
+  border-top-color: var(--error-600);
+}
+
+.spinner-neutral .spinner-inner {
+  border-color: var(--neutral-200);
+  border-top-color: var(--neutral-600);
+}
+
+.spinner-white .spinner-inner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+}
+
+/* Spinner Text */
+.spinner-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Full Screen Spinner */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.spinner-fullscreen {
+  padding: var(--space-8);
+}
+
+.spinner-fullscreen .spinner-text {
+  font-size: 1rem;
+  margin-top: var(--space-4);
+}
+
+/* Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulse Animation Variant */
+.spinner-pulse .spinner-inner {
+  animation: pulse 1.5s ease-in-out infinite;
+  border: none;
+  background: currentColor;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+/* Dots Animation Variant */
+.spinner-dots {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.spinner-dots .spinner-inner {
+  width: 0.5rem;
+  height: 0.5rem;
+  border: none;
+  background: currentColor;
+  border-radius: var(--radius-full);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.spinner-dots .spinner-inner:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.spinner-dots .spinner-inner:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.spinner-dots .spinner-inner:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--neutral-200) 25%, var(--neutral-100) 50%, var(--neutral-200) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-text:last-child {
+  margin-bottom: 0;
+  width: 60%;
+}
+
+.skeleton-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-full);
+}
+
+.skeleton-button {
+  height: 2.5rem;
+  width: 6rem;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .spinner-overlay {
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .skeleton {
+    background: linear-gradient(90deg, var(--neutral-700) 25%, var(--neutral-600) 50%, var(--neutral-700) 75%);
+    background-size: 200% 100%;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .spinner-inner,
+  .skeleton {
+    animation: none;
+  }
+  
+  .spinner-dots .spinner-inner {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  .spinner-primary .spinner-inner {
+    border-top-color: var(--primary-800);
+  }
+  
+  .spinner-text {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+}

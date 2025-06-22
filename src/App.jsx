@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"; // Added useRef
+import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config";
@@ -10,17 +10,19 @@ import Analytics from "./components/Dashboard/Analytics.jsx";
 import Summary from "./components/Dashboard/Summary.jsx";
 import FocusMode from "./components/Dashboard/FocusMode.jsx";
 import CalendarView from "./components/Dashboard/CalendarView.jsx";
-import "./index.css";
-import Chatbot from "./components/Chatbot/Chatbot.jsx"; // Import the Chatbot
+import Chatbot from "./components/Chatbot/Chatbot.jsx";
+import LoadingSpinner from "./components/UI/LoadingSpinner.jsx";
+import Button from "./components/UI/Button.jsx";
+import { Settings, LogOut } from "lucide-react";
 import { format } from "date-fns";
-
+import "./index.css";
 
 function App() {
   const [isLoggedIn, setLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false); // Renamed for clarity
 
   // Focus Timer State Lifted to App.jsx
   const [focusTimerState, setFocusTimerState] = useState({
@@ -36,7 +38,7 @@ function App() {
   });
   const focusTimerRef = useRef(null);
   const focusAudioRef = useRef(null);
-  const focusSessionCompletedCallbackRef = useRef(null); // To call FocusMode's logging function
+  const focusSessionCompletedCallbackRef = useRef(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -44,11 +46,11 @@ function App() {
         setLoggedIn(true);
         setUsername(user.displayName || user.email.split('@')[0]);
       } else {
-        // If user logs out, ensure timer stops and resets if it was running
         if (focusTimerState.isRunning) pauseFocusTimer();
         setLoggedIn(false);
         setUsername("");
       }
+      setIsLoading(false);
     });
     
     document.title = "PlanX - Daily Planner";
@@ -81,14 +83,14 @@ function App() {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  // --- Focus Timer Logic ---
+  // Focus Timer Logic
   useEffect(() => {
     if (focusTimerState.isRunning && isLoggedIn) {
       focusTimerRef.current = setInterval(() => {
         setFocusTimerState(prev => {
           if (prev.timeLeft <= 1) {
             handleFocusTimerComplete(prev.mode, prev.settings[prev.mode]);
-            return { ...prev, timeLeft: 0, isRunning: false }; // Stop timer here
+            return { ...prev, timeLeft: 0, isRunning: false };
           }
           return { ...prev, timeLeft: prev.timeLeft - 1 };
         });
@@ -99,7 +101,7 @@ function App() {
     return () => {
       if (focusTimerRef.current) clearInterval(focusTimerRef.current);
     };
-  }, [focusTimerState.isRunning, isLoggedIn]); // Add isLoggedIn dependency
+  }, [focusTimerState.isRunning, isLoggedIn]);
 
   const handleFocusTimerComplete = (completedMode, duration) => {
     if (focusTimerRef.current) clearInterval(focusTimerRef.current);
@@ -119,7 +121,7 @@ function App() {
 
     setFocusTimerState(prev => ({
       ...prev,
-      isRunning: false, // Ensure it's set to false before mode change potentially starts it
+      isRunning: false,
       mode: nextMode,
       timeLeft: prev.settings[nextMode],
     }));
@@ -146,7 +148,6 @@ function App() {
     const newTimeInSeconds = minutes * 60;
     setFocusTimerState(prev => {
       const newSettings = { ...prev.settings, [modeKey]: newTimeInSeconds };
-      // If the currently active mode's setting is changed, update timeLeft if not running
       const newTimeLeft = (prev.mode === modeKey && !prev.isRunning) ? newTimeInSeconds : prev.timeLeft;
       return {
         ...prev,
@@ -160,11 +161,21 @@ function App() {
   const registerFocusSessionCompletedCallback = (callback) => {
     focusSessionCompletedCallbackRef.current = callback;
   };
-  // --- End Focus Timer Logic ---
 
-  // if (!isLoggedIn) {
-  //   return <Login onLogin={handleLogin} />;
-  // }
+  if (isLoading) {
+    return (
+      <LoadingSpinner 
+        fullScreen 
+        size="large" 
+        text="Loading PlanX..." 
+        color="primary" 
+      />
+    );
+  }
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <BrowserRouter>
@@ -184,7 +195,7 @@ function App() {
               {sidebarCollapsed && (
                 <button 
                   onClick={toggleSidebar}
-                  className="mr-3 p-2 rounded-full hover:bg-gray-100"
+                  className="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -196,23 +207,23 @@ function App() {
               </h1>
             </div>
             
-            <div className="flex items-center">
-              <button
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="medium"
+                icon={<Settings size={18} />}
                 onClick={() => {/* Toggle theme or settings */}}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-full mr-3 transition duration-200"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </button>
+                aria-label="Settings"
+              />
               
-              <button
+              <Button
+                variant="danger"
+                size="medium"
+                icon={<LogOut size={18} />}
                 onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-300 flex items-center"
               >
                 Logout
-              </button>
+              </Button>
             </div>
           </div>
           
@@ -241,7 +252,7 @@ function App() {
               <Route path="*" element={<Navigate to="/tasks" />} />
             </Routes>
           </div>
-          <Chatbot /> {/* Add Chatbot component here */}
+          <Chatbot />
         </div>
       </div>
     </BrowserRouter>
