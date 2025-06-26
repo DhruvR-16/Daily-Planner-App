@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react"; // Added useRef
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase-config";
 import Login from "./components/Login.jsx";
@@ -8,8 +8,11 @@ import Tasks from "./components/Dashboard/Tasks.jsx";
 import Notes from "./components/Dashboard/Notes.jsx";
 import Analytics from "./components/Dashboard/Analytics.jsx"; 
 import Summary from "./components/Dashboard/Summary.jsx";
-import "./index.css";
+import FocusMode from "./components/Dashboard/FocusMode.jsx";
+import CalendarView from "./components/Dashboard/CalendarView.jsx";
 import { format } from "date-fns";
+import { Menu, X } from "lucide-react";
+import "./index.css";
 
 
 function App() {
@@ -17,7 +20,10 @@ function App() {
   const [username, setUsername] = useState("");
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false); 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+
+  const [isMobileScreen, setIsMobileScreen] = useState(window.innerWidth < 768);
 
 
   const [focusTimerState, setFocusTimerState] = useState({
@@ -33,7 +39,28 @@ function App() {
   });
   const focusTimerRef = useRef(null);
   const focusAudioRef = useRef(null);
-  const focusSessionCompletedCallbackRef = useRef(null); 
+  const focusSessionCompletedCallbackRef = useRef(null);
+  
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobileScreen(mobile);
+      if (!mobile && mobileNavOpen) {
+        setMobileNavOpen(false);
+      }
+      if (mobile && !sidebarCollapsed) {
+        setSidebarCollapsed(true);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); 
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, [mobileNavOpen, sidebarCollapsed]);
+  
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -58,22 +85,36 @@ function App() {
 
   const handleLogin = (data) => {
     setUsername(data.username);
+    setLoggedIn(true);
   };
 
   const handleLogout = async () => {
     try {
+      if (focusTimerState.isRunning) {
+        pauseFocusTimer();
+      }
       await signOut(auth);
+      setLoggedIn(false);
+      setUsername("");
     } catch (error) {
       console.error("Error signing out:", error);
+      alert("Failed to log out. Please try again.");
     }
   };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
+    if (isMobileScreen) {
+      setMobileNavOpen(false);
+    }
   };
   
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
+  };
+  
+  const toggleMobileNav = () => {
+    setMobileNavOpen(!mobileNavOpen);
   };
 
 
@@ -141,7 +182,6 @@ function App() {
     const newTimeInSeconds = minutes * 60;
     setFocusTimerState(prev => {
       const newSettings = { ...prev.settings, [modeKey]: newTimeInSeconds };
-      // If the currently active mode's setting is changed, update timeLeft if not running
       const newTimeLeft = (prev.mode === modeKey && !prev.isRunning) ? newTimeInSeconds : prev.timeLeft;
       return {
         ...prev,
@@ -156,81 +196,105 @@ function App() {
     focusSessionCompletedCallbackRef.current = callback;
   };
 
-
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
-  }
-
   return (
     <BrowserRouter>
-      <div className="flex h-screen bg-[#F5F7FA] overflow-hidden">
-        <Sidebar 
-          username={username} 
-          onDateChange={handleDateChange} 
-          selectedDate={selectedDate}
-          logoPath="/assets/logo.png"
-          collapsed={sidebarCollapsed}
-          toggleSidebar={toggleSidebar}
-        />
-        
-        <div className="flex-1 overflow-auto">
-          <div className="p-4 flex justify-between items-center bg-white shadow-sm border-b border-[#1A1A1A]/10">
-            <div className="flex items-center">
-              {sidebarCollapsed && (
-                <button 
-                  onClick={toggleSidebar}
-                  className="mr-3 p-2 rounded-full hover:bg-gray-100"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              )}
-              <h1 className="text-xl font-semibold text-gray-800">
-                Welcome, {username || "User"}
-              </h1>
-            </div>
-            
-            <div className="flex items-center">
+      {!isLoggedIn ? (
+        <Login onLogin={handleLogin} />
+      ) : (
+        <div className="flex flex-col md:flex-row h-screen bg-[#F5F7FA] overflow-hidden">
 
-              
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-300 flex items-center"
-              >
-                Logout
-              </button>
-            </div>
+          {isMobileScreen && mobileNavOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMobileNav}></div>
+          )}
+          
+
+          <div className={`
+            ${isMobileScreen ? 'fixed z-50 h-full' : 'relative'} 
+            ${isMobileScreen && !mobileNavOpen ? '-translate-x-full' : 'translate-x-0'}
+            transition-transform duration-300 ease-in-out
+          `}>
+            <Sidebar 
+              username={username} 
+              onDateChange={handleDateChange} 
+              selectedDate={selectedDate}
+              collapsed={!isMobileScreen && sidebarCollapsed}
+              toggleSidebar={toggleSidebar}
+              isMobile={isMobileScreen}
+              closeMobileNav={toggleMobileNav}
+            />
           </div>
           
-          <div className="p-6">
-            <Routes>
-              <Route path="/" element={<Navigate to="/tasks" />} />
-              <Route path="/tasks" element={<Tasks selectedDate={selectedDate} onDateChange={handleDateChange} />} />
-              <Route 
-                path="/focus" 
-                element={
-                  <FocusMode
-                    timerState={focusTimerState}
-                    startTimer={startFocusTimer}
-                    pauseTimer={pauseFocusTimer}
-                    resetTimer={resetFocusTimer}
-                    changeMode={changeFocusMode}
-                    updateSettings={updateFocusSettings}
-                    toggleSound={toggleFocusSound}
-                    registerSessionCompletedCallback={registerFocusSessionCompletedCallback}
-                  />} 
-              />
-              <Route path="/calendar" element={<CalendarView onDateSelect={handleDateChange} />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/summary" element={<Summary date={selectedDate} />} />
-              <Route path="/notes" element={<Notes />} />
-              <Route path="*" element={<Navigate to="/tasks" />} />
-            </Routes>
+
+          <div className="flex-1 flex flex-col overflow-hidden">
+
+            <div className="p-4 flex justify-between items-center bg-white shadow-sm border-b border-[#1A1A1A]/10">
+              <div className="flex items-center">
+                {isMobileScreen ? (
+                  <button 
+                    onClick={toggleMobileNav}
+                    className="mr-3 p-2 rounded-full hover:bg-gray-100"
+                  >
+                    <Menu className="h-5 w-5 text-gray-600" />
+                  </button>
+                ) : (
+                  sidebarCollapsed && (
+                    <button 
+                      onClick={toggleSidebar}
+                      className="mr-3 p-2 rounded-full hover:bg-gray-100"
+                    >
+                      <Menu className="h-5 w-5 text-gray-600" />
+                    </button>
+                  )
+                )}
+                <h1 className="text-lg md:text-xl font-semibold text-gray-800 truncate">
+                  Welcome, {username || "User"}
+                </h1>
+              </div>
+              
+              <div className="flex items-center">
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-md text-sm transition duration-300 flex items-center whitespace-nowrap"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+            
+
+            <div className="flex-1 p-3 md:p-6 overflow-auto">
+              <Routes>
+                <Route path="/" element={<Navigate to="/tasks" />} />
+                <Route path="/tasks" element={<Tasks selectedDate={selectedDate} onDateChange={handleDateChange} />} />
+                <Route 
+                  path="/focus" 
+                  element={
+                    <FocusMode
+                      timerState={focusTimerState}
+                      startTimer={startFocusTimer}
+                      pauseTimer={pauseFocusTimer}
+                      resetTimer={resetFocusTimer}
+                      changeMode={changeFocusMode}
+                      updateSettings={updateFocusSettings}
+                      toggleSound={toggleFocusSound}
+                      registerSessionCompletedCallback={registerFocusSessionCompletedCallback}
+                    />} 
+                />
+                <Route path="/calendar" element={<CalendarView onDateSelect={handleDateChange} />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/summary" element={<Summary date={selectedDate} />} />
+                <Route path="/notes" element={<Notes />} />
+                <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                <Route path="*" element={<Navigate to="/tasks" />} />
+              </Routes>
+            </div>
+            
+            <div className={`${isMobileScreen ? 'pb-4' : ''}`}>
+              <Chatbot isMobile={isMobileScreen} />
+            </div>
           </div>
-          <Chatbot />
         </div>
-      </div>
+      )}
     </BrowserRouter>
   );
 }
