@@ -10,6 +10,7 @@ import Analytics from "./components/Dashboard/Analytics.jsx";
 import Summary from "./components/Dashboard/Summary.jsx";
 import FocusMode from "./components/Dashboard/FocusMode.jsx";
 import CalendarView from "./components/Dashboard/CalendarView.jsx";
+import Chatbot from "./components/Chatbot/Chatbot.jsx"; 
 import { format } from "date-fns";
 import { Menu, X } from "lucide-react";
 import "./index.css";
