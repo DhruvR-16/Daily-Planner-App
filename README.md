@@ -1,12 +1,34 @@
-# React + Vite
+# 🗓️ PlanX – Daily Planner App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**PlanX** is a clean and focused daily planner web app designed to help you manage your tasks, jot down notes, track daily progress, chat with an AI assistant, and dive into distraction-free focus mode — all in one place.
 
-Currently, two official plugins are available:
+PlanX brings structure and clarity to your day without unnecessary clutter.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🔗 **Live App**: [plan-76dda.web.app](plan-76dda.web.app)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## ✨ Features
+
+- 🧾 **Task Management**  
+  Add, edit, delete, and complete daily tasks to stay organized and productive.
+
+- 📝 **Daily Notes**  
+  Write quick notes or reminders to keep everything in one place.
+
+- 📊 **Analytics Dashboard**  
+  Visual insights into your productivity — track completed, pending, and overall tasks.
+
+- 📚 **Daily Summary**  
+  Automatically generates a brief summary of your day based on completed tasks and notes.
+
+- 💬 **Built-in Chatbot Assistant**  
+  Ask questions, get productivity tips, and receive smart suggestions with the integrated AI chatbot.
+
+- 🎯 **Focus Mode**  
+  Enter a clutter-free environment to concentrate fully on one task at a time — perfect for deep work.
+
+- 📅 **Date-wise View**  
+  Easily navigate between days to plan ahead or reflect on past productivity.
+
+---
